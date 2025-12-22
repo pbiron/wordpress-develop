@@ -302,26 +302,52 @@ function wp_dashboard_right_now() {
 	<div class="main">
 	<ul>
 	<?php
-	// Posts and Pages.
-	foreach ( array( 'post', 'page' ) as $post_type ) {
-		$num_posts = wp_count_posts( $post_type );
+	// At a Glance Post Types.
+	foreach ( get_post_types( array( 'at_a_glance' => true ) ) as $post_type ) {
+		$num_posts          = wp_count_posts( $post_type );
+		$num_post_published = intval( $num_posts->publish );
 
-		if ( $num_posts && $num_posts->publish ) {
-			if ( 'post' === $post_type ) {
-				/* translators: %s: Number of posts. */
-				$text = _n( '%s Post', '%s Posts', $num_posts->publish );
-			} else {
-				/* translators: %s: Number of pages. */
-				$text = _n( '%s Page', '%s Pages', $num_posts->publish );
-			}
-
-			$text             = sprintf( $text, number_format_i18n( $num_posts->publish ) );
+		if ( $num_posts && $num_post_published ) {
 			$post_type_object = get_post_type_object( $post_type );
 
-			if ( $post_type_object && current_user_can( $post_type_object->cap->edit_posts ) ) {
-				printf( '<li class="%1$s-count"><a href="edit.php?post_type=%1$s">%2$s</a></li>', $post_type, $text );
+			if ( ! $post_type_object ) {
+				continue;
+			}
+			if ( 1 === $num_post_published ) {
+				$post_label = $post_type_object->labels->singular_name;
 			} else {
-				printf( '<li class="%1$s-count"><span>%2$s</span></li>', $post_type, $text );
+				$post_label = $post_type_object->labels->name;
+			}
+			$text = number_format_i18n( $num_post_published ) . ' ' . $post_label;
+
+			if ( str_starts_with( $post_type_object->menu_icon, 'dashicons' ) ) {
+				if ( $post_type_object && current_user_can( $post_type_object->cap->edit_posts ) ) {
+					printf( '<li class="%1$s-count"><a class="%3$s" href="edit.php?post_type=%1$s">%2$s</a></li>', $post_type, $text, $post_type_object->menu_icon );
+				} else {
+					printf( '<li class="%1$s-count"><span class="%3$s">%2$s</span></li>', $post_type, $text, $post_type_object->menu_icon );
+				}
+			} elseif ( str_starts_with( $post_type_object->menu_icon, 'data:image/svg+xml;base64,' ) ) {
+				?>
+<style>
+#dashboard_right_now li.<?php echo $post_type; ?>-count a:before,
+#dashboard_right_now li.<?php echo $post_type; ?>-count > span:before {
+	content: url( <?php echo $post_type_object->menu_icon; ?> );
+	height: auto;
+	width: 20px;
+}
+</style>
+				<?php
+				if ( $post_type_object && current_user_can( $post_type_object->cap->edit_posts ) ) {
+					printf( '<li class="%1$s-count"><a href="edit.php?post_type=%1$s">%2$s</a></li>', $post_type, $text, $post_type_object->menu_icon );
+				} else {
+					printf( '<li class="%1$s-count"><span>%2$s</span></li>', $post_type, $text, $post_type_object->menu_icon );
+				}
+			} else {
+				if ( $post_type_object && current_user_can( $post_type_object->cap->edit_posts ) ) {
+					printf( '<li class="%1$s-count"><a href="edit.php?post_type=%1$s">%2$s</a></li>', $post_type, $text );
+				} else {
+					printf( '<li class="%1$s-count"><span>%2$s</span></li>', $post_type, $text );
+				}
 			}
 		}
 	}
