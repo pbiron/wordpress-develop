@@ -336,7 +336,7 @@ function wp_dashboard_right_now() {
 	width: 20px;
 }
 </style>
-			<?php
+				<?php
 				if ( $post_type_object && current_user_can( $post_type_object->cap->edit_posts ) ) {
 					printf( '<li class="%1$s-count"><a href="edit.php?post_type=%1$s">%2$s</a></li>', $post_type, $text, $post_type_object->menu_icon );
 				} else {
