@@ -374,6 +374,7 @@ class WP_Filesystem_SSH2 extends WP_Filesystem_Base {
 
 		if ( null === $supports_ssh2_sftp_chmod ) {
 			$supports_ssh2_sftp_chmod = function_exists( 'ssh2_sftp_chmod' );
+			echo "Test";
 		}
 
 		if ( $supports_ssh2_sftp_chmod ) {
